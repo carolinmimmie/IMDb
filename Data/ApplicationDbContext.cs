@@ -14,4 +14,5 @@ public class ApplicationDbContext : DbContext
   }
   //Kunna prata med tabellen som skapades
   public DbSet<Movie> Movie { get; set; }
+  public DbSet<Actor> Actor{ get; set; }
 }

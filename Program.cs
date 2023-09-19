@@ -44,6 +44,8 @@ class Program
                 case ConsoleKey.D2: //case för menyval2
                 case ConsoleKey.NumPad2:
 
+                    AddActorView();
+
 
 
                     break;
@@ -58,6 +60,47 @@ class Program
 
             Clear(); // Rensa skärmen efter val i meny
         }
+    }
+
+    private static void AddActorView()
+    {
+        Write("Förnamn: ");
+
+        var firstName = ReadLine();
+
+        Write("Efternamn ");
+
+        var lastName = ReadLine();
+
+        Write("Födelsedatum (YYYY-MM-DD) ");
+        var birthDateStr = Console.ReadLine();//konventera DateStr till typen DateTime
+        var birthDate = DateTime.Parse(birthDateStr);
+
+        //en modell som representerar skådespelare
+        var actor = new Actor
+        {
+            FirstName = firstName,
+            LastName = lastName,
+            BirthDate = birthDate
+        };
+
+        SaveActor(actor);
+
+        WriteLine("SKådespelare sparad");
+
+        Thread.Sleep(2000);
+
+
+    }
+
+    private static void SaveActor(Actor actor)
+    {
+
+        using var context = new ApplicationDbContext();//context klass
+
+        context.Actor.Add(actor);//Lägger till vår film till Dbset Movir
+
+        context.SaveChanges();// sen sparar vi till databasen
     }
 
     private static void AddMovie()
