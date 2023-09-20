@@ -37,7 +37,7 @@ class Program
                 case ConsoleKey.D1: //case för menyval1
                 case ConsoleKey.NumPad1:
 
-                    AddMovie();
+                    AddMovieView();
 
                     break;
 
@@ -53,13 +53,75 @@ class Program
                 case ConsoleKey.D3: //case för menyval3
                 case ConsoleKey.NumPad3:
 
-                    Environment.Exit(0);
+                    AddActorToMovieView();
 
                     return;
             }
 
             Clear(); // Rensa skärmen efter val i meny
         }
+    }
+
+    private static void AddActorToMovieView()
+    {
+        Write("Skådespelare: ");
+
+        var actorFullName = ReadLine();
+
+        Write("Film: ");
+
+        var movieTitle = ReadLine();
+
+        var actor = FindActorByFullName(actorFullName);
+
+        var movie = FindMovieByTitle(movieTitle);
+
+        if (movie is not null && actor is not null)
+        {
+
+            using var context = new ApplicationDbContext();
+            //minnet
+            context.Movie.Attach(movie);
+
+            movie.Actors.Add(actor);
+            //Synkas till databasen
+            context.SaveChanges();
+
+            WriteLine("Skådespelare tillagd");
+
+        }
+        else
+        {
+            WriteLine("Skådespelare och/eller film saknas");
+        }
+        Thread.Sleep(2000);
+
+    }
+
+    private static Actor? FindActorByFullName(string fullName)
+    {
+        using var context = new ApplicationDbContext();
+
+        // Resultatet av detta uttryck är att den första filmen i databastabellen som matchar titeln 
+        // i title kommer att lagras i variabeln movie. Om ingen matchning hittas kommer movie att vara null.
+        var fullNameParts = fullName.Split(" ");
+
+        var firstName = fullNameParts[0];
+        var lastName = fullNameParts[1];
+
+        var actor = context.Actor.FirstOrDefault(x => x.FirstName == firstName && x.LastName == lastName);
+
+        return actor;
+    }
+
+    private static Movie? FindMovieByTitle(string title)// den här metoden kan returna två olika värden antingen movie eller null
+    {
+        using var context = new ApplicationDbContext();
+        // Resultatet av detta uttryck är att den första filmen i databastabellen som matchar titeln 
+        // i title kommer att lagras i variabeln movie. Om ingen matchning hittas kommer movie att vara null.
+        var movie = context.Movie.FirstOrDefault(x => x.Title == title);
+
+        return movie;
     }
 
     private static void AddActorView()
@@ -86,7 +148,7 @@ class Program
 
         SaveActor(actor);
 
-        WriteLine("SKådespelare sparad");
+        WriteLine("Skådespelare sparad");
 
         Thread.Sleep(2000);
 
@@ -103,7 +165,7 @@ class Program
         context.SaveChanges();// sen sparar vi till databasen
     }
 
-    private static void AddMovie()
+    private static void AddMovieView()
     {
         Write("Titel: ");
 
