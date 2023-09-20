@@ -1,6 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Threading.Tasks.Dataflow;
 using IMDb.Data;
 using IMDb.Domain;
+using Microsoft.EntityFrameworkCore;
 using static System.Console;//Slipper skriva console
 
 // En namnrymd används för att organisera och separera olika delar av din kod
@@ -55,10 +57,57 @@ class Program
 
                     AddActorToMovieView();
 
-                    return;
+                    break;
+
+                case ConsoleKey.D4: //case för menyval3
+                case ConsoleKey.NumPad4:
+
+                    SearchMovieView();
+
+                    break;
             }
 
             Clear(); // Rensa skärmen efter val i meny
+        }
+    }
+
+    private static void SearchMovieView()
+    {
+        WriteLine("Ange titel:");
+
+        var movieTitle = ReadLine();
+
+        Clear();
+
+        var movie = FindMovieByTitle(movieTitle);
+
+        if (movie is not null)
+        {
+            WriteLine("#----------------------------------");
+            WriteLine($"#{movie.Title}");
+            WriteLine("#----------------------------------");
+
+            WriteLine();
+            WriteLine(movie.Plot);
+            WriteLine();
+
+            WriteLine($"Genre: {movie.Genre}");
+            WriteLine($"Regissör: {movie.Director}");
+            WriteLine($"År: {movie.ReleaseDate.Year}");
+            WriteLine();
+
+            WriteLine("Skådespelare");
+
+            foreach (var actor in movie.Actors)
+            {
+                WriteLine($"- {actor.FirstName} {actor.LastName}");
+            }
+            WaitUntilKeyPressed(ConsoleKey.Escape);
+
+        }
+        else
+        {
+            WriteLine("Film saknas");
         }
     }
 
@@ -78,7 +127,7 @@ class Program
 
         if (movie is not null && actor is not null)
         {
-
+            //Joina ihop alla tabeller med include
             using var context = new ApplicationDbContext();
             //minnet
             context.Movie.Attach(movie);
@@ -119,7 +168,12 @@ class Program
         using var context = new ApplicationDbContext();
         // Resultatet av detta uttryck är att den första filmen i databastabellen som matchar titeln 
         // i title kommer att lagras i variabeln movie. Om ingen matchning hittas kommer movie att vara null.
-        var movie = context.Movie.FirstOrDefault(x => x.Title == title);
+
+        //JOIN - include 
+        var movie = context
+        .Movie
+        .Include(x => x.Actors)
+        .FirstOrDefault(x => x.Title == title);
 
         return movie;
     }
@@ -218,6 +272,10 @@ class Program
 
         context.SaveChanges();// sen sparar vi till databasen
 
+    }
+    private static void WaitUntilKeyPressed(ConsoleKey key)
+    {
+        while (ReadKey(true).Key != key) ;
     }
 }
 
